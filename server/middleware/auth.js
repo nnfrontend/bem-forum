@@ -39,6 +39,7 @@ module.exports = function(pattern, options) {
 
         token = req.cookies['forum_token'];
         token && service.addUserAPI(token);
+        req.token = token;
 
         next();
     };

@@ -1,9 +1,9 @@
-var url = require('url'),
-    _ = require('lodash'),
+var _ = require('lodash'),
     vow = require('vow'),
 
     service = require('../service'),
     template = require('../template'),
+    controllers = require('../controllers'),
     routes = require('../routes'),
     util = require('../util'),
 
@@ -44,7 +44,6 @@ module.exports = function(pattern, options) {
             query,
             action,
             method,
-            token,
             options,
             isGetRequest,
             isDeleteRequest;
@@ -75,35 +74,24 @@ module.exports = function(pattern, options) {
             csrf: 'csrf'
         });
 
-        var templateCtx = {
-            getIssues:     { block: 'forum-issues' },
-            getIssue:      { block: 'issue' },
-            createIssue:   { block: 'issue', forumUrl: req.forumUrl, labelsRequired: req.labelsRequired, csrf: req.csrf },
-            editIssue:     { block: 'issue', forumUrl: req.forumUrl, labelsRequired: req.labelsRequired, csrf: req.csrf },
-            getComments:   { block: 'comments', mods: { view: 'close' }, issueNumber: options.number, forumUrl: req.forumUrl },
-            createComment: { block: 'comment', issueNumber: options.number, forumUrl: req.forumUrl, csrf: req.csrf },
-            editComment:   { block: 'comment', issueNumber: options.number, forumUrl: req.forumUrl, csrf: req.csrf },
-            getLabels:     { block: 'forum-labels', mods: { view: options.view } }
-        };
-
         // get full page from server on first enter
         if(!req.xhr) {
             // collect all required data for templates
             var promises = {
-                user: service.getAuthUser(token, {}),
-                labels: service.getLabels (token, {})
+                user: service.getAuthUser(req.token, {}),
+                labels: service.getLabels (req.token, {})
             };
 
             if(options.number) {
                 // get issue data, that have a number option
                 _.extend(promises, {
-                    issue: service.getIssue(token, options),
-                    comments: service.getComments(token, options),
+                    issue: service.getIssue(req.token, options),
+                    comments: service.getComments(req.token, options),
                     view: 'issue'
                 });
             } else {
                 _.extend(promises, {
-                    issues: service.getIssues(token, options),
+                    issues: service.getIssues(req.token, options),
                     view: 'issues'
                 });
             }
@@ -127,49 +115,7 @@ module.exports = function(pattern, options) {
                     console.err(err);
                 });
         } else {
-            // ajax requests
-            var result = {};
-
-            // do something with owner right,
-            // e.g. add labels when user create/edit issue
-            if(query.__access === 'owner' && ownerToken) {
-                token = ownerToken;
-                service.addUserAPI(token);
-            }
-
-            // create issue without checked labels - default behaviors
-            var isIssueAction = (action === 'createIssue' || action === 'editIssue');
-
-            if((isIssueAction && !options.labels) || (isIssueAction && !ownerToken)) {
-                options.labels = [];
-            }
-
-            // get data by ajax
-            return service[action](token, options)
-                .then(function(data) {
-                    if('json' === query.__mode) {
-                        res.json(data);
-                        return;
-                    }
-
-                    // check if current page is last for paginator
-                    if('getIssues' === action) {
-                        result.isLastPage = (!data.length || data.length < 10);
-                    }
-
-                    return template.run(_.extend(templateCtx[action] || {}, { data: data }), req);
-                })
-                .then(function(html) {
-                    if(action === 'getIssues') {
-                        result.html = html;
-                        res.json(result);
-                    } else {
-                        res.end(html);
-                    }
-                })
-                .fail(function(err) {
-                    res.end(err);
-                });
+            return controllers.get(action).run(req, res, query, ownerToken, options);
         }
     };
 };
