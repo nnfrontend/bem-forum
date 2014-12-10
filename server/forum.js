@@ -2,7 +2,7 @@ var _ = require('lodash'),
     vow = require('vow'),
 
     auth = require('./auth'),
-    model = require('./model'),
+    service = require('./service'),
     template = require('./template'),
     routes = require('./routes'),
     util = require('./util'),
@@ -39,7 +39,7 @@ module.exports = function(pattern, options) {
     routes.init(baseUrl);
     auth.init(options);
     template.init(options);
-    model.init(options);
+    service.init(options);
 
     var ownerToken = options.owner_token,
         // for check, if user checked at least one label
@@ -80,7 +80,7 @@ module.exports = function(pattern, options) {
         }
 
         token = req.cookies['forum_token'];
-        token && model.addUserAPI(token);
+        token && service.addUserAPI(token);
 
         if(!action) {
             res.writeHead(500);
@@ -113,20 +113,20 @@ module.exports = function(pattern, options) {
         if(!req.xhr) {
             // collect all required data for templates
             var promises = {
-                user: model.getAuthUser(token, {}),
-                labels: model.getLabels (token, {})
+                user: service.getAuthUser(token, {}),
+                labels: service.getLabels (token, {})
             };
 
             if(options.number) {
                 // get issue data, that have a number option
                 _.extend(promises, {
-                    issue: model.getIssue(token, options),
-                    comments: model.getComments(token, options),
+                    issue: service.getIssue(token, options),
+                    comments: service.getComments(token, options),
                     view: 'issue'
                 });
             } else {
                 _.extend(promises, {
-                    issues: model.getIssues(token, options),
+                    issues: service.getIssues(token, options),
                     view: 'issues'
                 });
             }
@@ -157,7 +157,7 @@ module.exports = function(pattern, options) {
             // e.g. add labels when user create/edit issue
             if(query.__access === 'owner' && ownerToken) {
                 token = ownerToken;
-                model.addUserAPI(token);
+                service.addUserAPI(token);
             }
 
             // create issue without checked labels - default behaviors
@@ -168,7 +168,7 @@ module.exports = function(pattern, options) {
             }
 
             // get data by ajax
-            return model[action](token, options)
+            return service[action](token, options)
                 .then(function(data) {
                     if('json' === query.__mode) {
                         res.json(data);
@@ -177,7 +177,7 @@ module.exports = function(pattern, options) {
 
                     // check if current page is last for paginator
                     if('getIssues' === action) {
-                        result.isLastPage = (!data.length || data.length < 10)
+                        result.isLastPage = (!data.length || data.length < 10);
                     }
 
                     return template.run(_.extend(templateCtx[action] || {}, { data: data }), req);

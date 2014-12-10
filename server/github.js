@@ -47,20 +47,6 @@ var apiCall = function(token, group, name, opts) {
     return def.promise();
 };
 
-/**
- * Returns name of function
- * @param fn - {Function}
- * @returns {*}
- * @private
- */
-var getFnName = function(fn) {
-    var _this = module.exports;
-
-    return Object.keys(module.exports).filter(function(key) {
-        return _this[key] === fn;
-    })[0];
-};
-
 module.exports = {
 
     init: function(opts) {
@@ -194,7 +180,7 @@ module.exports = {
      * @returns {*}
      */
     getComments: function(token, options) {
-        return apiCall(token, 'issues', getFnName(arguments.callee), options);
+        return apiCall(token, 'issues', 'getComments', options);
     },
 
     /**
@@ -206,7 +192,7 @@ module.exports = {
      * @returns {*}
      */
     createComment: function(token, options) {
-        return apiCall(token, 'issues', getFnName(arguments.callee), options);
+        return apiCall(token, 'issues', 'createComment', options);
     },
 
     /**
@@ -218,7 +204,7 @@ module.exports = {
      * @returns {*}
      */
     editComment: function(token, options) {
-        return apiCall(token, 'issues', getFnName(arguments.callee), options);
+        return apiCall(token, 'issues', 'editComment', options);
     },
 
     /**
@@ -229,7 +215,7 @@ module.exports = {
      * @returns {*}
      */
     deleteComment: function(token, options) {
-        return apiCall(token, 'issues', getFnName(arguments.callee), options);
+        return apiCall(token, 'issues', 'deleteComment', options);
     },
 
     /**
@@ -239,7 +225,7 @@ module.exports = {
      * @returns {*}
      */
     getLabels: function(token, options) {
-        return apiCall(token, 'issues', getFnName(arguments.callee), options);
+        return apiCall(token, 'issues', 'getLabels', options);
     },
 
     /**
@@ -259,6 +245,6 @@ module.exports = {
      * @returns {*}
      */
     getRepoInfo: function(token, options) {
-        return apiCall(token, 'repos', 'get', options)
+        return apiCall(token, 'repos', 'get', options);
     }
 };
