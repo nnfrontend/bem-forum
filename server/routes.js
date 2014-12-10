@@ -1,4 +1,22 @@
 var Susanin = require('susanin'),
+    constants = require('./constants'),
+    BaseRoute = function(baseUrl) {
+        this.baseUrl = baseUrl;
+        this.METHOD = {
+            GET: 'GET',
+            POST: 'POST',
+            PUT: 'PUT',
+            DELETE:'DELETE'
+        };
+
+        this.get = function (name, method, pattern) {
+            return {
+                name: name,
+                data: { method: method },
+                pattern: this.baseUrl + (pattern ? pattern : '')
+            };
+        };
+    },
     susanin;
 
 /**
@@ -7,25 +25,22 @@ var Susanin = require('susanin'),
  */
 exports.init = function(baseUrl) {
 
-    //remove trailing slash
-    //var url = baseUrl.replace(/\/$/, '');
-
-    var url = baseUrl;
-
+    var url = baseUrl,
+        route = new BaseRoute(url);
     susanin = [
-        { name: 'index',         data: { method: 'GET' },    pattern: url },
-        { name: 'getIssues',     data: { method: 'GET' },    pattern: url + 'issues' },
-        { name: 'getIssue',      data: { method: 'GET' },    pattern: url + 'issues/<number>' },
-        { name: 'createIssue',   data: { method: 'POST' },   pattern: url + 'issues' },
-        { name: 'editIssue',     data: { method: 'PUT' },    pattern: url + 'issues/<number>' },
-        { name: 'getComments',   data: { method: 'GET' },    pattern: url + 'issues/<number>/comments' },
-        { name: 'createComment', data: { method: 'POST' },   pattern: url + 'issues/<number>/comments' },
-        { name: 'editComment',   data: { method: 'PUT' },    pattern: url + 'issues/<number>/comments/<id>' },
-        { name: 'deleteComment', data: { method: 'DELETE' }, pattern: url + 'issues/<number>/comments/<id>' },
-        { name: 'getLabels',     data: { method: 'GET' },    pattern: url + 'labels' },
-        { name: 'getAuthUser',   data: { method: 'GET' },    pattern: url + 'user' },
-        { name: 'auth',          data: { method: 'GET' },   pattern: url + 'auth' },
-        { name: 'getRepoInfo',   data: { method: 'GET' },   pattern: url + 'repo' }
+        route.get(constants.HANDLERS.INDEX, route.METHOD.GET),
+        route.get(constants.HANDLERS.GET_ISSUES, route.METHOD.GET, 'issues'),
+        route.get(constants.HANDLERS.GET_ISSUE, route.METHOD.GET, 'issues/<number>'),
+        route.get(constants.HANDLERS.CREATE_ISSUE, route.METHOD.POST, 'issues'),
+        route.get(constants.HANDLERS.EDIT_ISSUE, route.METHOD.PUT, 'issues/<number>'),
+        route.get(constants.HANDLERS.GET_COMMENTS, route.METHOD.GET, 'issues/<number>/comments'),
+        route.get(constants.HANDLERS.CREATE_COMMENT, route.METHOD.POST, 'issues/<number>/comments'),
+        route.get(constants.HANDLERS.EDIT_COMMENT, route.METHOD.PUT, 'issues/<number>/comments/<id>'),
+        route.get(constants.HANDLERS.DELETE_COMMENT, route.METHOD.DELETE, 'issues/<number>/comments/<id>'),
+        route.get(constants.HANDLERS.GET_LABELS, route.METHOD.GET, 'labels'),
+        route.get(constants.HANDLERS.GET_AUTH_USER, route.METHOD.GET, 'user'),
+        route.get(constants.HANDLERS.AUTH, route.METHOD.GET, 'auth'),
+        route.get(constants.HANDLERS.GET_REPO_INFO, route.METHOD.GET, 'repo')
     ].reduce(function(_susanin, route) {
             route.pattern += '(/)';
             _susanin.addRoute(route);
