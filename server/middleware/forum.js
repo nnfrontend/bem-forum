@@ -12,12 +12,8 @@ var url = require('url'),
 function setPageTitle(req) {
     // i18 object for page title
     var i18n = {
-            ru: {
-                title: 'Форум / БЭМ. Блок, Элемент, Модификатор'
-            },
-            en: {
-                title: 'Forum / BEM. Block, Element, Modifier'
-            }
+            ru: { title: 'Форум / БЭМ. Блок, Элемент, Модификатор' },
+            en: { title: 'Forum / BEM. Block, Element, Modifier' }
         },
         headersLang = req.headers && req.headers['accept-language'],
         lang = headersLang ? headersLang.substr(0,2) : '',

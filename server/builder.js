@@ -1,5 +1,4 @@
-var path = require('path'),
-    vow = require('vow'),
+var vow = require('vow'),
     enbBuilder = require('enb/lib/server/server-middleware').createBuilder({
         cdir: process.cwd(),
         noLog: false
