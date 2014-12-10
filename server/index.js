@@ -8,7 +8,9 @@ var express = require('express'),
     _ = require('lodash'),
 
     // forum modules
-    forum = require('./forum'),
+
+    auth = require('./middleware/auth'),
+    forum = require('./middleware/forum'),
     config = require('./config').get('forum'),
     util = require('./util'),
     template = require('./template'),
@@ -31,6 +33,7 @@ app
     .use(cookieParser()) //also is necessary for forum
     .use(bodyParser()) //also is necessary for forum
     .use(session({ secret: 'forum-session', saveUninitialized: true, resave: true }))
+    .use(auth('/', config))
     .use(forum('/', config)) //forum middleware
     .use(function(req, res) {
         return template.run(_.extend({ block: 'page' }, req.__data), req)

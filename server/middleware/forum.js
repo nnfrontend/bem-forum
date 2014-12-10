@@ -1,11 +1,11 @@
-var _ = require('lodash'),
+var url = require('url'),
+    _ = require('lodash'),
     vow = require('vow'),
 
-    auth = require('./auth'),
-    service = require('./service'),
-    template = require('./template'),
-    routes = require('./routes'),
-    util = require('./util'),
+    service = require('../service'),
+    template = require('../template'),
+    routes = require('../routes'),
+    util = require('../util'),
 
     baseUrl = '/forum/';
 
@@ -33,14 +33,9 @@ function setPageTitle(req) {
 }
 
 module.exports = function(pattern, options) {
-
     baseUrl = pattern || baseUrl;
 
-    routes.init(baseUrl);
-    auth.init(options);
     template.init(options);
-    service.init(options);
-
     var ownerToken = options.owner_token,
         // for check, if user checked at least one label
         // for create/edit issue forms - knowledge is taken
@@ -67,20 +62,6 @@ module.exports = function(pattern, options) {
 
         isGetRequest = 'GET' === method;
         isDeleteRequest = 'DELETE' === method;
-
-        // get access token after redirect
-        if('index' === action && query.code) {
-            return auth.getAccessToken(req, res, query.code);
-        }
-
-        // for all non get requests and when forum token cookie is not exists
-        // send request for user authorization
-        if((!isGetRequest || 'auth' === action) && (!req.cookies || !req.cookies['forum_token'])) {
-            return auth.sendAuthRequest(req, res);
-        }
-
-        token = req.cookies['forum_token'];
-        token && service.addUserAPI(token);
 
         if(!action) {
             res.writeHead(500);

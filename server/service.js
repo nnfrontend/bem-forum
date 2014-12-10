@@ -1,4 +1,5 @@
-var CronJob = require('cron').CronJob,
+var _ = require('lodash'),
+    CronJob = require('cron').CronJob,
     github = require('./github');
 
 var DEFAULT = {
@@ -99,7 +100,9 @@ module.exports = {
      * @returns {*}
      */
     getIssues: function(token, options) {
-        options.labels = options.labels ? options.labels.join(',') : '';
+        if(_.isArray(options.labels)) {
+            options.labels = options.labels.join(',');
+        }
         options.sort = (options.sort && /^(created|updated|comments)$/.test(options.sort)) ?
             options.sort : DEFAULT.sort.field;
         options.direction = (options.direction && /^(asc|desc)$/.test(options.direction)) ?
